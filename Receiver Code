@@ -1,0 +1,114 @@
+//Receiver Code
+
+#include <esp_now.h>
+#include <WiFi.h>
+#include <Adafruit_NeoPixel.h>//library to operate WS2812B LED strip
+
+#define PIN_O 12  // The ESP32 pin GPIO1 connected to WS2812B  
+#define NUM_PIXELS 20   // The number of LEDs (pixels) on WS2812B LED strip
+int stop = 13;
+Adafruit_NeoPixel led(NUM_PIXELS,PIN_O , NEO_GRB + NEO_KHZ800);
+char c;
+
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&c, incomingData, sizeof(c));
+}
+ 
+void setup() {
+  pinMode(stop,INPUT_PULLDOWN);
+  led.begin(); 
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }  
+}
+ 
+void loop() {
+  esp_now_register_recv_cb(OnDataRecv);
+  switch (c){
+    case 'l':
+    Serial.println(c);
+    led.clear(); 
+    /Every loop will run 5 times, i.e., blinking will be 5 times/
+    for(int x=0;x<5;x++)
+    {
+      for (int pixel = 0; pixel < 10; pixel++) 
+      {         
+        led.setPixelColor(pixel, led.Color(0, 255, 0));  // it only takes effect if pixels.show() is called
+      }
+      led.show();                                          // update to the WS2812B Led Strip
+      delay(500);  // 500ms pause between each pixel
+      for (int pixel = 0; pixel < 10; pixel++) // for each pixel
+      {         
+        led.setPixelColor(pixel, led.Color(0, 0, 0));  // it only takes effect if pixels.show() is called
+      }
+      led.show();                                          // update to the WS2812B Led Strip
+      delay(500);  // 500ms pause between each pixel
+    }
+    break;
+    case 'r':
+    Serial.println(c);
+    led.clear(); 
+    for(int x=0;x<5;x++)
+    {
+      for (int pixel = 10; pixel < 20; pixel++) /
+      {         
+        led.setPixelColor(pixel, led.Color(0, 255, 0));  
+      }
+      led.show();                                         
+      delay(500);  
+     for (int pixel = 10; pixel < 20; pixel++) 
+      {         
+        led.setPixelColor(pixel, led.Color(0, 0, 0));  
+      }
+      led.show();                                          
+      delay(500); 
+    }
+    break;
+    case 's':
+    Serial.println(c);
+    led.clear(); 
+    for(int x=0;x<5;x++)
+    {
+      for (int pixel = 0; pixel < 20; pixel++) 
+      {         
+        led.setPixelColor(pixel, led.Color(255, 50, 0));  
+      }
+      led.show();                                          
+      delay(500);  
+     for (int pixel = 0; pixel < 20; pixel++) 
+      {         
+        led.setPixelColor(pixel, led.Color(0, 0, 0));  
+      }
+      led.show();                                          
+      delay(500);  
+    }
+    break;
+    case 'f':
+    Serial.println(c);
+    led.clear(); 
+    digitalRead(stop);
+    while(stop != HIGH)
+    {
+     for (int pixel = 0; pixel < 20; pixel++) 
+      {         
+        led.setPixelColor(pixel, led.Color(255, 0, 0));  
+      }
+      led.show();                                          
+      delay(500);  
+     for (int pixel = 0; pixel < 20; pixel++) 
+      {         
+        led.setPixelColor(pixel, led.Color(0, 0, 0));  
+      }
+      led.show();                                          
+      delay(500);
+      digitalRead(stop);
+    }
+    break;
+    case 'n':
+    break;
+  }
+  }
